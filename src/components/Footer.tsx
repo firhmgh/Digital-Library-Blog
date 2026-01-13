@@ -116,7 +116,7 @@ export function Footer() {
 
         <div className="border-t border-gray-200 dark:border-slate-800 mt-8 pt-8 text-center text-sm text-gray-600 dark:text-gray-400">
           <p>&copy; 2026 Perpustakaan Digital. Semua hak dilindungi undang-undang.</p>
-          <p className="mt-1">Dibuat dengan ❤️ untuk komunitas literasi Indonesia</p>
+          <p className="mt-1">Dibuat oleh Padepokan Super untuk Indonesia tercinta</p>
         </div>
       </div>
     </footer>
