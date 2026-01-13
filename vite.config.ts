@@ -4,8 +4,8 @@
   import path from 'path';
 
   export default defineConfig({
-    base: "/Digital-Library-Blog/",
     plugins: [react()],
+    base: "/Digital-Library-Blog/",
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
