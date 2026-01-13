@@ -9,7 +9,7 @@ import { ArticleDetailPage } from './pages/ArticleDetailPage';
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/Digital-Library-Blog">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-slate-950 dark:via-blue-950/20 dark:to-slate-900 transition-colors">
         <Header />
         <main>
