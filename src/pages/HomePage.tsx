@@ -1,15 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // 1. Tambahkan useEffect & useState
 import { useNavigate } from 'react-router-dom';
 import { Search, TrendingUp, ChevronRight } from 'lucide-react';
 import { ArticleCard } from '../components/ArticleCard';
 import { CategoryCard } from '../components/CategoryCard';
 import { articles, categories, getFeaturedArticles } from '../data/mockData';
+import { API_URL, STORAGE_URL } from '../apiConfig'; // 2. Import config API
 
 export function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const featuredArticles = getFeaturedArticles();
-  const latestArticles = articles.slice(0, 6);
+  
+  // 3. State khusus untuk Artikel dari API
+  const [apiArticles, setApiArticles] = useState<any[]>([]);
+
+  // 4. Ambil data dari API Laravel
+  useEffect(() => {
+    fetch(`${API_URL}/articles`)
+      .then((res) => res.json())
+      .then((data) => {
+        // Kita petakan agar field 'banner' dari DB masuk ke field 'image' yang dibaca komponen
+        const mappedData = data.map((item: any) => ({
+          ...item,
+          image: item.banner ? `${STORAGE_URL}/${item.banner}` : 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62',
+          author: item.author?.name || 'Admin'
+        }));
+        setApiArticles(mappedData);
+      })
+      .catch((err) => console.error("Gagal ambil data API:", err));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +35,13 @@ export function HomePage() {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
+
+  // DATA DUMMY (Tetap dipertahankan)
+  const featuredArticles = getFeaturedArticles();
+  
+  // DATA API (Hanya untuk Latest Articles)
+  // Jika API belum slesai loading, dia akan kosong [], jika sudah ada dia ambil 6
+  const latestArticlesFromAPI = apiArticles.slice(0, 6);
 
   return (
     <div className="pt-20 md:pt-24">
@@ -29,7 +54,7 @@ export function HomePage() {
           <div className="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-6 animate-in fade-in slide-in-from-bottom-3 duration-700">
             <TrendingUp className="w-4 h-4 text-blue-900 dark:text-blue-400" />
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              12 artikel baru ditambahkan minggu ini
+              {apiArticles.length > 0 ? apiArticles.length : '12'} artikel tersedia di database
             </span>
           </div>
           
@@ -74,13 +99,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Featured Articles */}
+      {/* Featured Articles (TETAP DUMMY) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Artikel Pilihan</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Bacaan terkurasi dari berbagai kategori
+              Bacaan terkurasi dari berbagai kategori (Data Dummy)
             </p>
           </div>
         </div>
@@ -98,13 +123,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Categories (TETAP DUMMY) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Jelajahi Kategori</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Temukan artikel berdasarkan minat Anda
+              Temukan artikel berdasarkan minat Anda (Data Dummy)
             </p>
           </div>
         </div>
@@ -116,13 +141,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Latest Articles */}
+      {/* Latest Articles (SEKARANG DARI API) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Artikel Terbaru</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Update terkini dari koleksi kami
+              Update terkini dari database Laravel (Data API)
             </p>
           </div>
           <button
@@ -135,9 +160,14 @@ export function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {latestArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
+          {/* Mapping dari data API */}
+          {latestArticlesFromAPI.length > 0 ? (
+            latestArticlesFromAPI.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))
+          ) : (
+            <p className="text-gray-500">Menghubungkan ke server...</p>
+          )}
         </div>
 
         <div className="md:hidden text-center">
