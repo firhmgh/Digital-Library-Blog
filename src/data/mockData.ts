@@ -452,3 +452,98 @@ export function getRelatedArticles(currentArticle: Article, limit: number = 3): 
     )
     .slice(0, limit);
 }
+
+export interface LibraryEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  category: 'workshop' | 'discussion' | 'exhibition' | 'webinar';
+  spotsLeft?: number;
+  image: string;
+  status: 'upcoming' | 'ongoing' | 'full';
+  locationType: 'physical' | 'online' | 'hybrid';
+}
+
+export const upcomingEvents: LibraryEvent[] = [
+  {
+    id: 'evt-1',
+    title: 'Workshop Literasi Digital untuk Pemula',
+    description: 'Pelajari cara mengakses dan memanfaatkan perpustakaan digital dengan maksimal. Cocok untuk segala usia.',
+    date: '2026-01-22',
+    time: '14:00 - 16:00 WIB',
+    location: 'Ruang Seminar Lantai 3',
+    category: 'workshop',
+    spotsLeft: 12,
+    image: 'https://images.unsplash.com/photo-1596496638641-e240fd67b4c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3Jrc2hvcCUyMGRpZ2l0YWwlMjBsZWFybmluZ3xlbnwxfHx8fDE3Njg1NDU1MzN8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'upcoming',
+    locationType: 'physical'
+  },
+  {
+    id: 'evt-2',
+    title: 'Diskusi Buku: "Filosofi Teras" - Henry Manampiring',
+    description: 'Bergabunglah dalam diskusi mendalam tentang stoikisme dan relevansinya dengan kehidupan modern.',
+    date: '2026-01-25',
+    time: '16:00 - 18:00 WIB',
+    location: 'Reading Corner',
+    category: 'discussion',
+    spotsLeft: 20,
+    image: 'https://images.unsplash.com/photo-1763896081109-ed6bf56ae955?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib29rJTIwZGlzY3Vzc2lvbiUyMGdyb3VwfGVufDF8fHx8MTc2ODU0NTUzM3ww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'upcoming',
+    locationType: 'hybrid'
+  },
+  {
+    id: 'evt-3',
+    title: 'Pameran Manuskrip Kuno Nusantara',
+    description: 'Saksikan koleksi manuskrip langka dari berbagai daerah di Indonesia dengan teknologi AR immersive.',
+    date: '2026-01-28',
+    time: '10:00 - 17:00 WIB',
+    location: 'Galeri Utama',
+    category: 'exhibition',
+    spotsLeft: undefined,
+    image: 'https://images.unsplash.com/photo-1723721229325-b286656e768a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtdXNldW0lMjBleGhpYml0aW9uJTIwYXJ0fGVufDF8fHx8MTc2ODQ1NTY1OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'ongoing',
+    locationType: 'physical'
+  },
+  {
+    id: 'evt-4',
+    title: 'Webinar: AI dan Masa Depan Pembelajaran',
+    description: 'Pakar teknologi pendidikan membahas bagaimana AI mengubah landscape literasi dan pembelajaran.',
+    date: '2026-02-01',
+    time: '19:00 - 20:30 WIB',
+    location: 'Online via Zoom',
+    category: 'webinar',
+    spotsLeft: 150,
+    image: 'https://images.unsplash.com/photo-1758598306845-8630d064a244?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvbmxpbmUlMjB3ZWJpbmFyJTIwcHJlc2VudGF0aW9ufGVufDF8fHx8MTc2ODU0NTUzNHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'upcoming',
+    locationType: 'online'
+  },
+  {
+    id: 'evt-5',
+    title: 'Story Time: Dongeng Interaktif untuk Anak',
+    description: 'Sesi mendongeng interaktif dengan animasi dan permainan edukatif untuk anak usia 5-10 tahun.',
+    date: '2026-02-05',
+    time: '10:00 - 11:30 WIB',
+    location: "Children's Corner",
+    category: 'workshop',
+    spotsLeft: 0,
+    image: 'https://images.unsplash.com/photo-1763013259158-8a8370542ddb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMHN0b3J5dGVsbGluZ3xlbnwxfHx8fDE3Njg1NDU1MzV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'full',
+    locationType: 'physical'
+  },
+  {
+    id: 'evt-6',
+    title: 'Peluncuran Buku: "Jejak Digital Nusantara"',
+    description: 'Meet & greet dengan penulis dan diskusi tentang digitalisasi warisan budaya Indonesia.',
+    date: '2026-02-10',
+    time: '15:00 - 17:00 WIB',
+    location: 'Auditorium',
+    category: 'discussion',
+    spotsLeft: 35,
+    image: 'https://images.unsplash.com/photo-1764345607963-8b0e78b2a81b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib29rJTIwbGF1bmNoJTIwZXZlbnR8ZW58MXx8fHwxNzY4NTExMTM1fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+    status: 'upcoming',
+    locationType: 'physical'
+  }
+];

@@ -1,32 +1,36 @@
-import { useState, useEffect } from 'react'; // 1. Tambahkan useEffect & useState
+import { useState, useEffect } from 'react'; // 1. Tambahkan useEffect
 import { useNavigate } from 'react-router-dom';
 import { Search, TrendingUp, ChevronRight } from 'lucide-react';
 import { ArticleCard } from '../components/ArticleCard';
 import { CategoryCard } from '../components/CategoryCard';
-import { articles, categories, getFeaturedArticles } from '../data/mockData';
+import { EventCard } from '../components/EventCard';
+import { LibraryInfoSection } from '../components/LibraryInfoSection';
 import { API_URL, STORAGE_URL } from '../apiConfig'; // 2. Import config API
+import { articles, categories, getFeaturedArticles, upcomingEvents } from '../data/mockData';
 
 export function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  
-  // 3. State khusus untuk Artikel dari API
+
+  // 3. State untuk menampung Artikel dari API (Terbaru)
   const [apiArticles, setApiArticles] = useState<any[]>([]);
 
-  // 4. Ambil data dari API Laravel
+  // 4. Ambil data dari API Laravel khusus untuk Artikel Terbaru
   useEffect(() => {
     fetch(`${API_URL}/articles`)
       .then((res) => res.json())
       .then((data) => {
-        // Kita petakan agar field 'banner' dari DB masuk ke field 'image' yang dibaca komponen
+        // Kita petakan agar data dari Laravel cocok dengan properti yang dibutuhkan ArticleCard
         const mappedData = data.map((item: any) => ({
           ...item,
+          // Map banner DB ke image URL
           image: item.banner ? `${STORAGE_URL}/${item.banner}` : 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62',
-          author: item.author?.name || 'Admin'
+          // Pastikan struktur author berupa objek { name: '...' } sesuai ArticleCard
+          author: { name: item.author?.name || 'Admin' }
         }));
         setApiArticles(mappedData);
       })
-      .catch((err) => console.error("Gagal ambil data API:", err));
+      .catch((err) => console.error("Gagal ambil data API Artikel:", err));
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -36,12 +40,9 @@ export function HomePage() {
     }
   };
 
-  // DATA DUMMY (Tetap dipertahankan)
-  const featuredArticles = getFeaturedArticles();
-  
-  // DATA API (Hanya untuk Latest Articles)
-  // Jika API belum slesai loading, dia akan kosong [], jika sudah ada dia ambil 6
-  const latestArticlesFromAPI = apiArticles.slice(0, 6);
+  // Logika Data
+  const featuredArticles = getFeaturedArticles(); // Tetap Dummy
+  const latestArticlesFromAPI = apiArticles.slice(0, 6); // Dari API Laravel
 
   return (
     <div className="pt-20 md:pt-24">
@@ -99,13 +100,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Featured Articles (TETAP DUMMY) */}
+      {/* Featured Articles (Dummy) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Artikel Pilihan</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Bacaan terkurasi dari berbagai kategori (Data Dummy)
+              Bacaan terkurasi dari berbagai kategori
             </p>
           </div>
         </div>
@@ -123,13 +124,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Categories (TETAP DUMMY) */}
+      {/* Categories (Dummy) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Jelajahi Kategori</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Temukan artikel berdasarkan minat Anda (Data Dummy)
+              Temukan artikel berdasarkan minat Anda
             </p>
           </div>
         </div>
@@ -141,13 +142,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Latest Articles (SEKARANG DARI API) */}
+      {/* Latest Articles (API LARAVEL) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">Artikel Terbaru</h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Update terkini dari database Laravel (Data API)
+              Update terkini dari database kami
             </p>
           </div>
           <button
@@ -160,13 +161,14 @@ export function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {/* Mapping dari data API */}
           {latestArticlesFromAPI.length > 0 ? (
             latestArticlesFromAPI.map((article) => (
               <ArticleCard key={article.id} article={article} />
             ))
           ) : (
-            <p className="text-gray-500">Menghubungkan ke server...</p>
+            <div className="col-span-3 text-center py-10">
+               <p className="text-gray-500 italic">Menghubungkan ke server atau database kosong...</p>
+            </div>
           )}
         </div>
 
@@ -179,6 +181,45 @@ export function HomePage() {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+      </section>
+
+      {/* Upcoming Events (Dummy) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">Acara Mendatang</h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              Jangan lewatkan event menarik di perpustakaan kami
+            </p>
+          </div>
+        </div>
+        
+        <div className="lg:hidden overflow-x-auto pb-4 -mx-4 px-4">
+          <div className="flex gap-6" style={{ width: 'max-content' }}>
+            {upcomingEvents.map((event) => (
+              <div key={event.id} className="w-[340px] flex-shrink-0">
+                <EventCard event={event} />
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="hidden lg:grid grid-cols-3 gap-6">
+          {upcomingEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      </section>
+
+      {/* Library Info (Dummy) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-2">Informasi Perpustakaan</h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Segala yang perlu Anda ketahui tentang perpustakaan kami
+          </p>
+        </div>
+        <LibraryInfoSection />
       </section>
 
       {/* CTA Section */}
