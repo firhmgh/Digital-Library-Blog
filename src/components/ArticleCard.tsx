@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Tag } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { getImageUrl } from '../apiConfig'; // 1. Import fungsi helper global
 
 // Gunakan interface lokal agar tidak bergantung pada mockData yang kaku
 interface ArticleCardProps {
@@ -9,7 +10,7 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
-  // 1. Penanganan Tanggal (Laravel menggunakan created_at atau published_at)
+  // 2. Penanganan Tanggal (Laravel menggunakan created_at atau published_at)
   const dateValue = article.date || article.created_at || article.published_at;
   const formattedDate = dateValue 
     ? new Date(dateValue).toLocaleDateString('id-ID', {
@@ -19,14 +20,18 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
       })
     : 'Tanggal tidak tersedia';
 
-  // 2. Penanganan Penulis (Laravel biasanya mengirim objek user/author)
+  // 3. Penanganan Penulis (Laravel biasanya mengirim objek user/author)
   const authorName = typeof article.author === 'object' ? article.author?.name : (article.author || 'Admin');
 
-  // 3. Penanganan Ringkasan/Excerpt (Jika tidak ada excerpt, potong dari content)
-  const excerpt = article.excerpt || (article.content ? article.content.substring(0, 100) + '...' : '');
+  // 4. Penanganan Ringkasan/Excerpt (Jika tidak ada excerpt, potong dari content)
+  const excerpt = article.excerpt || (article.content ? article.content.substring(0, 100).replace(/<[^>]*>?/gm, '') + '...' : '');
 
-  // 4. Penanganan Tags (Penyebab Error Slice tadi)
+  // 5. Penanganan Tags
   const safeTags = Array.isArray(article.tags) ? article.tags : [];
+
+  // 6. Mendapatkan URL Gambar menggunakan helper global
+  // Kita cek banner (dari Laravel) atau image (dari mock)
+  const finalImageUrl = getImageUrl(article.banner || article.image);
 
   if (variant === 'featured') {
     return (
@@ -36,19 +41,19 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
       >
         <div className="relative h-64 md:h-80 overflow-hidden">
           <ImageWithFallback
-            src={article.image}
+            src={finalImageUrl} 
             alt={article.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-left">
             <div className="flex items-center gap-2 mb-3">
               <span className="px-3 py-1 bg-blue-900/80 backdrop-blur-sm text-white text-xs font-medium rounded-full">
                 {typeof article.category === 'object' ? article.category?.name : article.category}
               </span>
               <span className="flex items-center gap-1 text-white/90 text-xs">
                 <Clock className="w-3 h-3" />
-                {article.readTime || '5'} min
+                {article.readTime || article.read_time || '5'} min
               </span>
             </div>
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 line-clamp-2">
@@ -74,11 +79,11 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
     return (
       <Link
         to={`/article/${article.slug || article.id}`}
-        className="group flex gap-4 glass-card glass-card-hover rounded-xl p-4"
+        className="group flex gap-4 glass-card glass-card-hover rounded-xl p-4 text-left"
       >
         <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
           <ImageWithFallback
-            src={article.image}
+            src={finalImageUrl} 
             alt={article.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -93,7 +98,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
           <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              {article.readTime || '5'} min
+              {article.readTime || article.read_time || '5'} min
             </span>
             <span>{formattedDate}</span>
           </div>
@@ -105,11 +110,11 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
   return (
     <Link
       to={`/article/${article.slug || article.id}`}
-      className="group block glass-card glass-card-hover rounded-xl overflow-hidden h-full"
+      className="group block glass-card glass-card-hover rounded-xl overflow-hidden h-full text-left"
     >
       <div className="relative h-48 overflow-hidden">
         <ImageWithFallback
-          src={article.image}
+          src={finalImageUrl} // Menggunakan hasil helper
           alt={article.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
@@ -130,7 +135,7 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
           <span className="font-medium">{authorName}</span>
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {article.readTime || '5'} min
+            {article.readTime || article.read_time || '5'} min
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
@@ -138,7 +143,6 @@ export function ArticleCard({ article, variant = 'default' }: ArticleCardProps) 
           <span className="text-gray-500 dark:text-gray-500">{formattedDate}</span>
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
-          {/* Perbaikan Error Slice: Kita cek apakah tags ada dan merupakan array */}
           {safeTags.slice(0, 2).map((tag: any) => (
             <span
               key={typeof tag === 'object' ? tag.id : tag}

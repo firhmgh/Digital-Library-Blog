@@ -1,30 +1,76 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, Grid3x3, List } from 'lucide-react';
 import { ArticleCard } from '../components/ArticleCard';
-import { articles, categories } from '../data/mockData';
+import { API_URL, STORAGE_URL } from '../apiConfig';
 
 export function AllArticlesPage() {
+  // --- STATE DATA API ---
+  const [apiArticles, setApiArticles] = useState<any[]>([]);
+  const [apiCategories, setApiCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // --- STATE UI CONTROL ---
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 9;
 
-  // Filter and sort articles
+  // --- HELPER: SMART IMAGE MAPPING ---
+  const getImageUrl = (banner: string) => {
+    if (!banner) return 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62';
+    return banner.startsWith('http') ? banner : `${STORAGE_URL}/${banner}`;
+  };
+
+  // --- FETCH DATA DARI API ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [resArticles, resCats] = await Promise.all([
+          fetch(`${API_URL}/articles`),
+          fetch(`${API_URL}/categories`)
+        ]);
+
+        const articlesData = await resArticles.json();
+        const catsData = await resCats.json();
+
+        // Map data artikel agar sesuai dengan komponen ArticleCard
+        const mappedArticles = articlesData.map((item: any) => ({
+          ...item,
+          image: getImageUrl(item.banner),
+          author: { name: item.author?.name || 'Admin' },
+          categorySlug: item.category?.slug || 'general'
+        }));
+
+        setApiArticles(mappedArticles);
+        setApiCategories(catsData);
+      } catch (error) {
+        console.error("Gagal memuat data artikel:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // --- LOGIKA FILTER & SORTING ---
   let filteredArticles = filterCategory === 'all' 
-    ? articles 
-    : articles.filter(article => 
-        article.category.toLowerCase().replace(/\s+/g, '-') === filterCategory
-      );
+    ? apiArticles 
+    : apiArticles.filter(article => article.categorySlug === filterCategory);
 
   filteredArticles = [...filteredArticles].sort((a, b) => {
     if (sortBy === 'latest') {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      const dateA = new Date(a.published_at || a.created_at).getTime();
+      const dateB = new Date(b.published_at || b.created_at).getTime();
+      return dateB - dateA;
     }
-    return b.readTime - a.readTime;
+    // Jika popular, kita urutkan berdasarkan views (atau read_time sebagai cadangan)
+    return (b.views || b.read_time) - (a.views || a.read_time);
   });
 
-  // Pagination
+  // --- PAGINATION ---
   const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
   const startIndex = (currentPage - 1) * articlesPerPage;
   const paginatedArticles = filteredArticles.slice(startIndex, startIndex + articlesPerPage);
@@ -38,7 +84,7 @@ export function AllArticlesPage() {
     <div className="pt-20 md:pt-24 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Page Header */}
-        <div className="mb-12">
+        <div className="mb-12 text-left">
           <h1 className="text-3xl md:text-4xl font-bold mb-3">Semua Artikel</h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
             Jelajahi koleksi lengkap artikel kami dari berbagai kategori
@@ -49,7 +95,7 @@ export function AllArticlesPage() {
         <div className="glass-card rounded-xl p-4 md:p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-center gap-4">
             {/* Category Filter */}
-            <div className="flex-1">
+            <div className="flex-1 text-left">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Kategori
               </label>
@@ -62,8 +108,8 @@ export function AllArticlesPage() {
                 className="w-full px-4 py-2 glass-card rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100"
               >
                 <option value="all">Semua Kategori</option>
-                {categories.map((category) => (
-                  <option key={category.slug} value={category.slug}>
+                {apiCategories.map((category) => (
+                  <option key={category.id} value={category.slug}>
                     {category.name}
                   </option>
                 ))}
@@ -71,7 +117,7 @@ export function AllArticlesPage() {
             </div>
 
             {/* Sort By */}
-            <div className="flex-1">
+            <div className="flex-1 text-left">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Urutkan
               </label>
@@ -89,7 +135,7 @@ export function AllArticlesPage() {
             </div>
 
             {/* View Mode */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 text-left">
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Tampilan
               </label>
@@ -101,7 +147,6 @@ export function AllArticlesPage() {
                       ? 'bg-blue-900/10 dark:bg-blue-500/20 text-blue-900 dark:text-blue-300'
                       : 'glass-card text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
                   }`}
-                  aria-label="Grid view"
                 >
                   <Grid3x3 className="w-5 h-5" />
                 </button>
@@ -112,7 +157,6 @@ export function AllArticlesPage() {
                       ? 'bg-blue-900/10 dark:bg-blue-500/20 text-blue-900 dark:text-blue-300'
                       : 'glass-card text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
                   }`}
-                  aria-label="List view"
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -121,16 +165,22 @@ export function AllArticlesPage() {
           </div>
 
           {/* Results Count */}
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800 text-left">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Menampilkan <span className="font-semibold">{startIndex + 1}-{Math.min(startIndex + articlesPerPage, filteredArticles.length)}</span> dari{' '}
-              <span className="font-semibold">{filteredArticles.length}</span> artikel
+              {isLoading ? "Memuat artikel..." : (
+                <>
+                  Menampilkan <span className="font-semibold">{startIndex + 1}-{Math.min(startIndex + articlesPerPage, filteredArticles.length)}</span> dari{' '}
+                  <span className="font-semibold">{filteredArticles.length}</span> artikel
+                </>
+              )}
             </p>
           </div>
         </div>
 
         {/* Articles Grid/List */}
-        {paginatedArticles.length > 0 ? (
+        {isLoading ? (
+          <div className="text-left py-20 text-gray-400 animate-pulse">Memuat koleksi artikel...</div>
+        ) : paginatedArticles.length > 0 ? (
           <>
             <div className={
               viewMode === 'grid'
@@ -152,7 +202,7 @@ export function AllArticlesPage() {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 glass-card rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 glass-card rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Sebelumnya
                 </button>
@@ -165,7 +215,7 @@ export function AllArticlesPage() {
                       className={`w-10 h-10 rounded-lg transition-colors ${
                         currentPage === page
                           ? 'bg-gradient-to-br from-blue-900 to-blue-700 dark:from-blue-600 dark:to-blue-500 text-white'
-                          : 'glass-card hover:bg-gray-100 dark:hover:bg-slate-800'
+                          : 'glass-card'
                       }`}
                     >
                       {page}
@@ -176,7 +226,7 @@ export function AllArticlesPage() {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 glass-card rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 glass-card rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Selanjutnya
                 </button>
@@ -184,7 +234,7 @@ export function AllArticlesPage() {
             )}
           </>
         ) : (
-          <div className="text-center py-20">
+          <div className="text-left py-20">
             <p className="text-gray-600 dark:text-gray-400">
               Tidak ada artikel ditemukan dengan filter ini
             </p>

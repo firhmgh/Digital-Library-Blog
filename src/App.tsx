@@ -18,7 +18,8 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/category/:categorySlug" element={<CategoryPage />} />
             <Route path="/articles" element={<AllArticlesPage />} />
-            <Route path="/article/:articleId" element={<ArticleDetailPage />} />
+            
+            <Route path="/article/:slug" element={<ArticleDetailPage />} />
           </Routes>
         </main>
         <Footer />
