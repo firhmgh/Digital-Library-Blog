@@ -2,13 +2,17 @@
  * URL Dasar untuk memanggil API Laravel.
  * Pastikan server backend Anda berjalan (php artisan serve).
  */
-export const API_URL = "http://127.0.0.1:8000/api";
+
+export const API_URL = "https://fuzzy-rivers-roll.loca.lt/api";
+// export const API_URL = "http://127.0.0.1:8000/api";
 
 /**
  * URL Dasar untuk mengakses file yang ada di folder storage/app/public.
  * Pastikan Anda sudah menjalankan 'php artisan storage:link' di terminal backend.
  */
-export const STORAGE_URL = "http://127.0.0.1:8000/storage";
+
+export const STORAGE_URL = "https://fuzzy-rivers-roll.loca.lt/storage";
+// export const STORAGE_URL = "http://127.0.0.1:8000/storage";
 
 /**
  * FUNGSI HELPER GAMBAR GLOBAL
