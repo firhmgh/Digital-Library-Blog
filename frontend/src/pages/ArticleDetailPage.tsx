@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, Clock, Tag, Bookmark, Twitter, Facebook, Linkedin } from 'lucide-react';
 import { ArticleCard } from '../components/ArticleCard';
-import { ImageWithFallback } from '../components/figma/ImageWithFallback';
+import { ImageWithFallback } from '../components/ui/ImageWithFallback';
 import { API_URL, STORAGE_URL, getImageUrl } from '../apiConfig'; 
 
 export function ArticleDetailPage() {

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Tag } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './ui/ImageWithFallback';
 import { getImageUrl } from '../apiConfig'; // 1. Import fungsi helper global
 
 // Gunakan interface lokal agar tidak bergantung pada mockData yang kaku
